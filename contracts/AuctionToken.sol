@@ -5,31 +5,61 @@ pragma solidity ^0.8.24;
 import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
+import { IDutchAuction } from "./IDutchAuction.sol";
+
 // when your're back, merge this contract with the auction contract
 
-contract AuctionToken is ERC721, Ownable {
-    uint public contant MAX_SUPPLY = 1000;
-    uint public immutable TOTAL_SUPPLY;
-    uint public immutable maxMintPerWallet;
+contract AuctionToken is IDutchAuction, Ownable, ERC721 {
     
-    constructor() ERC721("Arewa Auction", "AAN") Ownable(msg.sender) {}
+    Bid public bid;
 
-    function Mint(uint qtty) external {
-        require((TOTAL_SUPPLY + qtty) < MAX_SUPPLY, "Mint amount exceeds max supply");
-        require(balanceOf(msg.sender) + qtty < maxMintPerWallet, "Max allowed mint exceeded");
+    mapping(uint => Bid) bids;
 
-        for(uit i = 0; i < qtty; i++){
-            _mint(msg.sender, TOTAL_SUPPLY + 1);
-            TOTAL_SUPPLY ++;
-        }
+    constructor () Ownable(msg.sender) ERC721("Arewa Auction", "AAN") {}
+
+    // CONTRACT REWRITE AFTER INTERFACE CHANGE
+    function balanceOf (address tokenInd) external view returns (uint) {
+        return balanceOf(tokenIndex);
     }
 
-    function safeMint (address to) external payable() {
-        require(to != address(0), "Invalid receipient wallet");
-        require(msg.value <= price(), "Invalid ether amount");
-        
-        TOTAL_SUPPLY++;
-        uint tokenId = TOTAL_SUPPLY;
-        _safeMint(to, tokenId)
+    function ownerOf(uint tokenId) external view returns (address) {
+        _ownerOf(tokenId);
     }
+
+    function safeTransferFrom(address from, address to, uint tokenId) external;
+
+    function transferFrom(address from, address to, uint tokenId) external;
+
+    function approve(address to, uint tokenId) external;
+
+    function getApproved(uint tokenId) external view returns (address operator);
+
+    function setApprovalForAll(address operator, bool _approved) external;
+
+    function isApprovedForAll(address owner, address operator) external view returns (bool);
+
+    function safeTransferFrom(address from, address to, uint tokenId, bytes memory data) external;
+
+
+
+    // INTERNAL FUNCTIONS ACCESSIBLE ONLY THROUGH A CONTRACT
+    function _safeTransferFrom(from, to, tokenId, _data) internal {}
+
+    function _exists(tokenId) internal;
+
+    function _isApprovedOrOwner(spender, tokenId) internal;
+
+    function _safeMint(to, tokenId) internal;
+
+    function _safeMint(to, tokenId, _data) internal;
+
+    // function _mint(to, tokenId) internal;
+
+    function _burn(owner, tokenId) internal;
+
+    function _burn(tokenId) internal;
+
+    function _transferFrom(from, to, tokenId) internal;
+
+    function _checkOnERC721Received(from, to, tokenId, _data) internal;
 }
